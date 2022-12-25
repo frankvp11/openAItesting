@@ -3,6 +3,8 @@ import pygame
 import os
 from classes import Button
 from pygametextboxinput import TextInputBox
+import openai 
+openai.api_key = "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"
 
 #font stuff
 def get_font(size): 
@@ -20,17 +22,33 @@ screen = pygame.display.set_mode((1800, 1000))
 pygame.display.set_caption("Menu")
 
 
-promptBox = TextInputBox(50, 50, font_family="Arial" "Enter prompt here", max_width=1700, max_height=250)
-clearButton = Button(None, (300,400), "Clear", font=get_font(20), base_color="white", hovering_color="green")
+promptBox = TextInputBox(50, 50, font_family="Arial" "Enter prompt here", max_width=1650, max_height=250)
+clearButton = Button(None, (1700, 30), "Clear", font=get_font(20), base_color="white", hovering_color="green")
+postButton = Button(None, (1700, 100), "Post", font=get_font(20), base_color="white", hovering_color="green")
+
+
+def post_to_ai(text):
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=text,
+        temperature=0.7,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response
 
 
 def main():
+
     while True:
         screen.fill("black") # always keep at top
         mouse_position = pygame.mouse.get_pos()
         clearButton.changeColor(mouse_position)
         clearButton.update(screen)
-
+        postButton.changeColor(mouse_position)
+        postButton.update(screen)
         events = pygame.event.get()
 
         for event in events:
@@ -39,25 +57,28 @@ def main():
             if (event.type == pygame.KEYDOWN):
                 if event.key == pygame.K_v and event.mod & pygame.KMOD_CTRL:
                     pasted_text =  pygame.scrap.get("text/plain;charset=utf-8").decode()
-                    #promptBox.text = promptBox.text[:-1]
-                    #promptBox.text += pasted_text
+
                     if promptBox.max_string_length == -1 or len(promptBox.input_string) < promptBox.max_string_length:
-                    # If no special key is pressed, add unicode of key to input_string
                         promptBox.input_string = (
                             promptBox.input_string[:promptBox.cursor_position]
                             + pasted_text
-                            + promptBox.input_string[promptBox.cursor_position:]
+                            + promptBox.input_string[promptBox.cursor_position-1:]
                         )
                         promptBox.cursor_position += len(pasted_text)
                         
             if (event.type == pygame.MOUSEBUTTONDOWN):
                 if (clearButton.checkForInput(mouse_position)):
-                    #promptBox.text = ""
-                    pass
-
+                    promptBox.input_string = ""
+                    promptBox.cursor_position = 0
+                if (postButton.checkForInput(mouse_position)):
+                    output_text = post_to_ai(promptBox.input_string)
+                    print(output_text)
+                    
+#Write an essay about Jungian Psychology
 
         promptBox.update(events)
         promptBox.render(screen)
+
 
         pygame.display.update()
 
