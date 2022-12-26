@@ -1,10 +1,10 @@
 #imports
 import pygame
 import os
-from classes import Button
+from classes import Button, TextBox
 from pygametextboxinput import TextInputBox
 import openai 
-openai.api_key = "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"
+openai.api_key = "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"
 
 #font stuff
 def get_font(size): 
@@ -25,17 +25,17 @@ pygame.display.set_caption("Menu")
 promptBox = TextInputBox(50, 50, font_family="Arial" "Enter prompt here", max_width=1650, max_height=250)
 clearButton = Button(None, (1700, 30), "Clear", font=get_font(20), base_color="white", hovering_color="green")
 postButton = Button(None, (1700, 100), "Post", font=get_font(20), base_color="white", hovering_color="green")
-
+aiOutput = TextInputBox(50, 500, font_family="Arial" "", max_width=1650, max_height=500)
 
 def post_to_ai(text):
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=text,
         temperature=0.7,
-        max_tokens=256,
+        max_tokens=2000,
         top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
+        frequency_penalty=0.1,
+        presence_penalty=0.1
     )
     return response
 
@@ -73,9 +73,11 @@ def main():
                 if (postButton.checkForInput(mouse_position)):
                     output_text = post_to_ai(promptBox.input_string)
                     print(output_text)
+                    aiOutput.set_text(output_text["choices"][0]["text"])
                     
 #Write an essay about Jungian Psychology
-
+        aiOutput.render(screen)     
+        aiOutput.update(events, False)   
         promptBox.update(events)
         promptBox.render(screen)
 

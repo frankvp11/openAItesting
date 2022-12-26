@@ -33,7 +33,21 @@ class Button():
 		else:
 			self.text = self.font.render(self.text_input, True, self.base_color)
 
-
+class TextBox():
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x,y,w,h)
+        self.color = (255, 255, 255)
+        self.text = text
+        self.txt_surface = text_font.render(text, True, self.color)
+        self.txt_rect = self.txt_surface.get_rect()
+    def update(self):
+        # Re-render the text.
+        self.txt_surface = text_font.render(self.text, True, self.color)
+    def draw(self, screen):
+        # Blit the text.
+        screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 10))
+        # Blit the rect.
+        pygame.draw.rect(screen, self.color, self.rect, 1)
 
 
 class InputBox:
